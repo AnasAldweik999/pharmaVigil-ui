@@ -1,0 +1,76 @@
+<div class="pv-multi-select" #container>
+
+  <!-- Trigger -->
+  <div class="pv-ms-trigger" #trigger (click)="toggle($event)">
+    @if (selected().length === 0) {
+      <span class="pv-ms-placeholder">{{ resolvedPlaceholder }}</span>
+    } @else {
+      <div class="pv-ms-bubbles">
+        @for (s of visibleItems(); track s.value) {
+          <span class="pv-ms-bubble">
+            <span class="pv-ms-bubble-text" [title]="s.label">{{ s.label }}</span>
+            <button type="button" class="pv-ms-bubble-remove" (click)="remove(s.value, $event)" [attr.aria-label]="'common.remove' | translate">×</button>
+          </span>
+        }
+        @if (hiddenCount() > 0) {
+          <span class="pv-ms-bubble pv-ms-bubble--more" [title]="hiddenTooltip()">+{{ hiddenCount() }}</span>
+        }
+      </div>
+      <button type="button" class="pv-ms-clear" (click)="clearAll($event)">{{ 'common.clearAll' | translate }}</button>
+    }
+    <svg class="pv-ms-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+    </svg>
+  </div>
+
+  <!-- Dropdown panel — rendered in <body> via portal so position:fixed is viewport-relative -->
+  <div
+    #panel
+    class="pv-ms-panel"
+    style="position:fixed;z-index:1060"
+    [style.display]="isOpen() ? 'block' : 'none'"
+    [style.top.px]="panelTop()"
+    [style.left.px]="panelLeft()"
+    [style.width.px]="panelWidth()"
+    [style.visibility]="panelPositioned() ? 'visible' : 'hidden'"
+  >
+    <div class="pv-ms-search-wrap">
+      <input
+        type="text"
+        class="form-control form-control-sm pv-ms-search"
+        [placeholder]="'grid.searchEllipsis' | translate"
+        [value]="searchText()"
+        (input)="onSearchInput($any($event.target).value)"
+        (click)="$event.stopPropagation()"
+      />
+    </div>
+
+    <div class="pv-ms-options" [style.max-height.px]="itemsMaxHeight()" (scroll)="onItemsScroll($event)">
+      @if (loading()) {
+        <div class="text-center py-2">
+          <span class="spinner-border spinner-border-sm text-primary"></span>
+        </div>
+      } @else if (displayOptions().length === 0) {
+        <div class="pv-ms-empty">{{ 'common.noOptionsFound' | translate }}</div>
+      } @else {
+        @for (opt of displayOptions(); track valueFn(opt)) {
+          <label class="pv-ms-option" (click)="$event.preventDefault(); toggleOption(opt)">
+            <input type="checkbox" [checked]="isSelected(valueFn(opt))" (change)="toggleOption(opt)" (click)="$event.stopPropagation()" />
+            <span class="pv-ms-opt-label">
+              {{ labelFn(opt) }}
+              @if (secondaryLabelFn) {
+                <span class="pv-ms-secondary">{{ secondaryLabelFn(opt) }}</span>
+              }
+            </span>
+          </label>
+        }
+        @if (loadingMore()) {
+          <div class="text-center py-2">
+            <span class="spinner-border spinner-border-sm text-primary" style="width:12px;height:12px;border-width:1.5px" role="status" aria-hidden="true"></span>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+</div>

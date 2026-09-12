@@ -1,0 +1,39 @@
+<!-- ── Page header ────────────────────────────────────────────────────────── -->
+<div class="pv-page-header mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <div class="pv-page-header-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+      </svg>
+    </div>
+    <h1 class="pv-page-header-title">{{ 'nav.shifts' | translate }}</h1>
+  </div>
+  <a routerLink="/supervisor/shifts/new" class="pv-cta-btn">
+    <span class="pv-cta-btn-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+      </svg>
+    </span>
+    <span class="pv-cta-btn-label">{{ 'shifts.addShift' | translate }}</span>
+  </a>
+</div>
+
+<!-- ── Shifts Table ───────────────────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-4">
+
+    <app-grid
+      [columns]="gridColumns()"
+      [defaultSort]="{ field: 'createdAt', direction: 'desc' }"
+      [filterFields]="gridFilters()"
+      [clickableRows]="true"
+      [rows]="items()"
+      [totalElements]="totalElements()"
+      [totalPages]="totalPages()"
+      [loading]="loading()"
+      (stateChange)="onGridStateChange($event)"
+      (rowClick)="onRowClick($event)"
+    />
+
+  </div>
+</div>

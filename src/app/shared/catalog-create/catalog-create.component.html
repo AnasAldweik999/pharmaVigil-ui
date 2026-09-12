@@ -1,0 +1,51 @@
+<!-- ── Page header ────────────────────────────────────────────────────────── -->
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a [routerLink]="config.backRoute" class="pv-back-link" [title]="config.backLabelKey | translate">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+    </svg>
+  </a>
+  <h1 class="pv-page-header-title">{{ config.pageTitleKey | translate }}</h1>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate id="catalogCreateForm">
+
+  <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+    <div class="card-body p-3 p-md-4">
+
+      <div class="mb-1">
+        <label for="catalogName" class="form-label fw-medium">{{ config.nameLabelKey | translate }}</label>
+        <input
+          id="catalogName"
+          type="text"
+          class="form-control"
+          [class.is-invalid]="nameControl.invalid && nameControl.touched"
+          [class.is-valid]="nameControl.valid && nameControl.touched"
+          formControlName="name"
+          [placeholder]="config.namePlaceholderKey | translate"
+        />
+        @if (nameControl.touched && nameControl.hasError('required')) {
+          <div class="invalid-feedback">{{ 'users.nameRequired' | translate }}</div>
+        } @else if (nameControl.touched && nameControl.hasError('minlength') && config.minLengthErrorKey) {
+          <div class="invalid-feedback">{{ config.minLengthErrorKey | translate }}</div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="pv-form-footer">
+    <a [routerLink]="config.backRoute" class="btn btn-outline-secondary">{{ 'common.cancel' | translate }}</a>
+    <button type="submit" class="pv-submit-btn" [disabled]="submitting()">
+      @if (submitting()) {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        {{ 'users.creating' | translate }}
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+        </svg>
+        {{ config.submitLabelKey | translate }}
+      }
+    </button>
+  </div>
+
+</form>

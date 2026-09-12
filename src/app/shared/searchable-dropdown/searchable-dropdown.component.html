@@ -1,0 +1,101 @@
+<div class="position-relative">
+
+  <!-- Trigger -->
+  <div
+    #trigger
+    class="form-control d-flex align-items-center gap-1"
+    [class.form-control-sm]="small"
+    [class.pv-sd-invalid]="invalid"
+    [style.opacity]="_disabled() ? '0.65' : '1'"
+    [style.pointer-events]="_disabled() ? 'none' : 'auto'"
+    style="cursor:pointer;user-select:none;min-width:150px"
+    (mousedown)="$event.preventDefault(); togglePanel()"
+  >
+    <span
+      class="flex-grow-1 text-truncate"
+      [class.text-muted]="!_selectedValue()"
+      style="font-size:0.85rem;min-width:0"
+    >
+      {{ _selectedValue() ? (_selectedLabel() || _selectedValue()) : resolvedPlaceholder }}
+    </span>
+
+    @if (_selectedValue()) {
+      <button
+        type="button"
+        class="btn btn-link p-0 text-muted flex-shrink-0"
+        style="font-size:0.7rem;line-height:1"
+        tabindex="-1"
+        (mousedown)="$event.stopPropagation()"
+        (click)="clear()"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+        </svg>
+      </button>
+    } @else {
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="text-muted flex-shrink-0" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+      </svg>
+    }
+  </div>
+
+  <!-- Dropdown panel — rendered in <body> via portal so position:fixed is viewport-relative -->
+  <div
+    #panel
+    class="dropdown-menu show p-0 shadow-sm"
+    style="position:fixed;z-index:1060;min-width:220px"
+    [style.display]="(_panelOpen() && !_disabled()) ? 'block' : 'none'"
+    [style.top.px]="_panelTop()"
+    [style.left.px]="_panelLeft()"
+    [style.width.px]="_panelWidth()"
+    [style.visibility]="_panelVisible() ? 'visible' : 'hidden'"
+  >
+
+    <!-- Search input inside panel -->
+    <div class="p-2 border-bottom">
+      <div class="input-group input-group-sm">
+        <input
+          #searchInput
+          type="text"
+          class="form-control"
+          [placeholder]="'grid.searchEllipsis' | translate"
+          [value]="_searchText()"
+          (input)="onSearch($event)"
+          autocomplete="off"
+        />
+        @if (_loading()) {
+          <span class="input-group-text bg-white border-start-0 px-2">
+            <span class="spinner-border spinner-border-sm text-secondary" style="width:12px;height:12px;border-width:1.5px"></span>
+          </span>
+        }
+      </div>
+    </div>
+
+    <!-- Items -->
+    <div [style.max-height.px]="_itemsMaxHeight()" style="overflow-y:auto;overflow-x:hidden" (scroll)="onItemsScroll($event)">
+      @for (item of _filteredItems(); track valueFn(item)) {
+        <button
+          type="button"
+          class="dropdown-item py-1 px-3"
+          [class.active]="_selectedValue() === valueFn(item)"
+          (click)="select(item)"
+        >
+          <div style="font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ labelFn(item) }}</div>
+          @if (secondaryLabelFn) {
+            <div style="font-size:0.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" class="text-muted">{{ secondaryLabelFn(item) }}</div>
+          }
+        </button>
+      }
+      @if (!_loading() && _filteredItems().length === 0) {
+        <div class="dropdown-item-text py-1 px-3 text-muted" style="font-size:0.82rem">{{ 'common.noResults' | translate }}</div>
+      }
+      @if (_loadingMore()) {
+        <div class="dropdown-item-text py-2 px-3 text-muted text-center" style="font-size:0.78rem">
+          <span class="spinner-border spinner-border-sm" style="width:12px;height:12px;border-width:1.5px" role="status" aria-hidden="true"></span>
+        </div>
+      }
+    </div>
+
+  </div>
+
+</div>

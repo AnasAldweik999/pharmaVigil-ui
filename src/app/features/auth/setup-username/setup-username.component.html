@@ -1,0 +1,78 @@
+<div class="pv-auth-page">
+
+  <!-- Left: brand panel (desktop only) -->
+  <app-auth-brand-panel />
+
+  <!-- Right: form panel -->
+  <div class="pv-auth-form-panel">
+
+    <!-- Mobile hero -->
+    <app-auth-mobile-hero />
+
+    <div class="pv-auth-form-inner">
+      <div class="d-flex justify-content-end mb-3">
+        <app-language-switcher />
+      </div>
+
+      <h2 class="pv-auth-form-title">{{ 'auth.setupUsername.title' | translate }}</h2>
+      <p class="pv-auth-form-subtitle">{{ 'auth.setupUsername.subtitle' | translate }}</p>
+
+      @if (errorMessage()) {
+        <div class="alert alert-danger py-2 small mb-3" role="alert">{{ errorMessage() }}</div>
+      }
+
+      @if (!setupToken()) {
+        <div class="alert alert-warning py-2 small mb-3" role="alert">{{ 'auth.setupUsername.invalidLink' | translate }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="mb-4">
+          <label for="username" class="form-label fw-medium small">{{ 'auth.setupUsername.usernameLabel' | translate }}</label>
+          <input
+            id="username"
+            type="text"
+            class="form-control"
+            [class.is-invalid]="usernameControl.invalid && usernameControl.touched"
+            [class.is-valid]="usernameControl.valid && usernameControl.touched"
+            formControlName="username"
+            [placeholder]="'auth.setupUsername.usernamePlaceholder' | translate"
+            autocomplete="username"
+          />
+          @if (usernameControl.touched && usernameControl.hasError('required')) {
+            <div class="invalid-feedback">{{ 'auth.setupUsername.validation.required' | translate }}</div>
+          } @else if (usernameControl.touched && usernameControl.hasError('maxlength')) {
+            <div class="invalid-feedback">{{ 'auth.setupUsername.validation.maxLength' | translate }}</div>
+          } @else if (usernameControl.touched && usernameControl.hasError('pattern')) {
+            <div class="invalid-feedback">{{ 'auth.setupUsername.validation.pattern' | translate }}</div>
+          }
+          <div class="pv-field-hint">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+            </svg>
+            <span>{{ 'auth.setupUsername.usernameHint' | translate }}</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" [disabled]="loading() || !setupToken()">
+          @if (loading()) {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            {{ 'auth.setupUsername.settingUp' | translate }}
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+            </svg>
+            {{ 'auth.setupUsername.submit' | translate }}
+          }
+        </button>
+      </form>
+
+      <div class="text-center mt-4">
+        <a routerLink="/login" class="pv-auth-link">
+          <span class="pv-auth-link-arrow">{{ translation.dir() === 'rtl' ? '→' : '←' }}</span>
+          {{ 'auth.shared.backToSignIn' | translate }}
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>

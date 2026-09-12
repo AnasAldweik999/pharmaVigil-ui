@@ -1,0 +1,216 @@
+<!-- ── Page header ────────────────────────────────────────────────────────── -->
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a routerLink="/supervisor/users" class="pv-back-link" [title]="'users.backToUsers' | translate">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+    </svg>
+  </a>
+  <div>
+    <h1 class="pv-page-header-title">{{ 'users.createUser' | translate }}</h1>
+    <p class="pv-form-subtitle d-none d-sm-block">{{ 'users.createUserSubtitle' | translate }}</p>
+  </div>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="requestSubmit()" novalidate id="createUserForm">
+
+  <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+    <div class="pv-form-section-header">{{ 'users.accountDetails' | translate }}</div>
+    <div class="card-body p-3 p-md-4">
+
+      <div class="mb-3">
+        <label class="form-label fw-medium small text-secondary">{{ 'users.accountTypeLabel' | translate }}</label>
+        <div class="d-flex gap-2">
+          <label class="pv-role-option" for="roleStaff">
+            <input type="radio" class="visually-hidden" id="roleStaff" formControlName="accountType" value="STAFF" (change)="onAccountTypeChange('STAFF')" />
+            <div class="pv-role-option-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+              </svg>
+            </div>
+            {{ 'users.staff' | translate }}
+          </label>
+          <label class="pv-role-option" for="roleSupervisor">
+            <input type="radio" class="visually-hidden" id="roleSupervisor" formControlName="accountType" value="SUPERVISOR" (change)="onAccountTypeChange('SUPERVISOR')" />
+            <div class="pv-role-option-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M6.5 1a.5.5 0 0 0 0 1h1v1.07A7.001 7.001 0 0 0 8 16a7 7 0 0 0 5.29-11.584l.893-.893a.5.5 0 0 0-.707-.707l-.895.895A6.97 6.97 0 0 0 9 2.071V2h.5a.5.5 0 0 0 0-1zm2 5.6V9a.5.5 0 0 1-.5.5H6a.5.5 0 0 1 0-1h1.5V6.6a.5.5 0 0 1 1 0"/>
+              </svg>
+            </div>
+            {{ 'users.supervisor' | translate }}
+          </label>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <label for="createName" class="form-label fw-medium">{{ 'users.fullName' | translate }}<span class="pv-required" aria-hidden="true">*</span></label>
+          <input
+            id="createName"
+            type="text"
+            class="form-control"
+            [class.is-invalid]="nameControl.invalid && nameControl.touched"
+            [class.is-valid]="nameControl.valid && nameControl.touched"
+            formControlName="name"
+            [placeholder]="'users.fullNamePlaceholder' | translate"
+          />
+          @if (nameControl.touched && nameControl.hasError('required')) {
+            <div class="invalid-feedback">{{ 'users.nameRequired' | translate }}</div>
+          } @else if (nameControl.touched && nameControl.hasError('minlength')) {
+            <div class="invalid-feedback">{{ 'users.nameMinLength' | translate }}</div>
+          }
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label for="createEmail" class="form-label fw-medium">{{ 'users.emailAddress' | translate }}<span class="pv-required" aria-hidden="true">*</span></label>
+          <input
+            id="createEmail"
+            type="email"
+            class="form-control"
+            [class.is-invalid]="(emailControl.invalid && emailControl.touched) || fieldErrors()['email']"
+            [class.is-valid]="emailControl.valid && emailControl.dirty && !fieldErrors()['email']"
+            formControlName="email"
+            [placeholder]="'users.emailPlaceholder' | translate"
+            autocomplete="off"
+          />
+          @if (emailControl.touched && emailControl.hasError('required')) {
+            <div class="invalid-feedback">{{ 'email.required' | translate }}</div>
+          } @else if (emailControl.touched && emailControl.hasError('email')) {
+            <div class="invalid-feedback">{{ 'email.format.invalid' | translate }}</div>
+          } @else if (emailControl.touched && emailControl.hasError('taken')) {
+            <div class="invalid-feedback d-block">{{ 'users.emailTaken' | translate }}</div>
+          } @else if (fieldErrors()['email']) {
+            <div class="invalid-feedback d-block">{{ fieldErrors()['email'] }}</div>
+          }
+          @if (emailStatus() === 'PENDING') {
+            <div class="pv-field-status pv-field-status--checking">
+              <span class="spinner-border" role="status" aria-hidden="true"></span>
+              {{ 'users.checkingAvailability' | translate }}
+            </div>
+          } @else if (emailControl.dirty && emailControl.value && emailControl.valid) {
+            <div class="pv-field-status pv-field-status--available">
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+              </svg>
+              {{ 'users.available' | translate }}
+            </div>
+          }
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label for="createUsername" class="form-label fw-medium">{{ 'users.username' | translate }}<span class="pv-required" aria-hidden="true">*</span></label>
+          <input
+            id="createUsername"
+            type="text"
+            class="form-control"
+            [class.is-invalid]="(usernameControl.invalid && usernameControl.touched) || fieldErrors()['username']"
+            [class.is-valid]="usernameControl.valid && usernameControl.dirty && !fieldErrors()['username']"
+            formControlName="username"
+            [placeholder]="'users.usernamePlaceholder' | translate"
+            autocomplete="off"
+          />
+          @if (usernameControl.touched && usernameControl.hasError('required')) {
+            <div class="invalid-feedback">{{ 'username.required' | translate }}</div>
+          } @else if (usernameControl.touched && usernameControl.hasError('maxlength')) {
+            <div class="invalid-feedback">{{ 'username.too.long' | translate }}</div>
+          } @else if (usernameControl.touched && usernameControl.hasError('pattern')) {
+            <div class="invalid-feedback">{{ 'username.invalid.characters' | translate }}</div>
+          } @else if (usernameControl.touched && usernameControl.hasError('taken')) {
+            <div class="invalid-feedback d-block">{{ 'username.already.taken' | translate }}</div>
+          } @else if (fieldErrors()['username']) {
+            <div class="invalid-feedback d-block">{{ fieldErrors()['username'] }}</div>
+          }
+          @if (usernameStatus() === 'PENDING') {
+            <div class="pv-field-status pv-field-status--checking">
+              <span class="spinner-border" role="status" aria-hidden="true"></span>
+              {{ 'users.checkingAvailability' | translate }}
+            </div>
+          } @else if (usernameControl.dirty && usernameControl.value && usernameControl.valid) {
+            <div class="pv-field-status pv-field-status--available">
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+              </svg>
+              {{ 'users.available' | translate }}
+            </div>
+          }
+          <div class="pv-field-hint">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+            </svg>
+            <span>{{ 'users.usernameHint' | translate }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+    <div class="pv-form-section-header">{{ 'users.rolesPermissions' | translate }}</div>
+    <div class="card-body p-3 p-md-4">
+      <div class="pv-role-list-header">
+        <span class="small text-secondary">{{ 'users.choosePermissions' | translate }}</span>
+        @if (visibleRoles().length) {
+          <div class="pv-role-list-summary">
+            <span class="pv-role-count-badge" [class.pv-role-count-badge--empty]="!rolesControl.value.length">
+              {{ 'users.rolesSelectedCount' | translate:{ selected: '' + rolesControl.value.length, total: '' + visibleRoles().length } }}
+            </span>
+            <button type="button" class="pv-role-list-action" (click)="rolesControl.value.length === visibleRoles().length ? clearRoles() : selectAllRoles()">
+              {{ (rolesControl.value.length === visibleRoles().length ? 'common.clearAll' : 'users.selectAll') | translate }}
+            </button>
+          </div>
+        }
+      </div>
+      @if (rolesLoading()) {
+        <div class="small text-secondary">{{ 'users.loadingRoles' | translate }}</div>
+      } @else {
+        <div class="pv-role-list">
+          @for (role of visibleRoles(); track role.key) {
+            <label class="pv-role-row" [for]="'role-' + role.key">
+              <input
+                type="checkbox"
+                class="visually-hidden"
+                [id]="'role-' + role.key"
+                [checked]="isRoleSelected(role)"
+                (change)="toggleRole(role)"
+              />
+              <span class="pv-role-row-content">
+                <span class="pv-role-row-name">{{ role.name | translate }}</span>
+                <span class="pv-role-row-desc">{{ role.description | translate }}</span>
+              </span>
+              <span class="pv-role-row-checkbox" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M13.485 1.431a1.473 1.473 0 0 1 2.104 2.062l-7.84 9.801a1.473 1.473 0 0 1-2.12.04L.431 8.138a1.473 1.473 0 0 1 2.084-2.083l4.111 4.112 6.82-8.69z"/>
+                </svg>
+              </span>
+            </label>
+          }
+        </div>
+      }
+      @if (fieldErrors()['roles']) {
+        <div class="text-danger small mt-2">{{ fieldErrors()['roles'] }}</div>
+      }
+    </div>
+  </div>
+
+  <div class="pv-form-footer">
+    <a routerLink="/supervisor/users" class="btn btn-outline-secondary">{{ 'common.cancel' | translate }}</a>
+    <button type="submit" class="pv-submit-btn" [disabled]="submitting()">
+      @if (submitting()) {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        {{ 'users.creating' | translate }}
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+        </svg>
+        {{ 'users.createUserBtn' | translate }}
+      }
+    </button>
+  </div>
+</form>
+
+<app-confirm-modal
+  #confirmModal
+  [title]="'users.createUser' | translate"
+  [confirmLabel]="'users.createModalConfirm' | translate"
+  confirmBtnClass="btn-primary"
+  (confirmed)="onSubmit()"
+/>

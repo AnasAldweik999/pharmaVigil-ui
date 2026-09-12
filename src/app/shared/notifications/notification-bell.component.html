@@ -1,0 +1,113 @@
+<div class="pv-notif-bell">
+  <button
+    type="button"
+    class="pv-notif-bell-trigger"
+    (click)="toggle()"
+    [attr.aria-expanded]="open()"
+    [attr.aria-label]="bellAriaLabel()"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16">
+      <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6"/>
+    </svg>
+    @if (unreadCount() > 0) {
+      <span class="pv-notif-badge" aria-hidden="true">{{ badgeLabel() }}</span>
+    }
+  </button>
+
+  @if (open()) {
+    <div class="pv-notif-panel" #panel (keydown)="onPanelKeydown($event)">
+      <div class="pv-notif-panel-header">
+        <span class="pv-notif-panel-title">{{ 'notifications.title' | translate }}</span>
+        <div class="pv-notif-panel-header-actions">
+          <button
+            type="button"
+            class="pv-notif-mark-all"
+            [disabled]="markingAllRead() || unreadCount() === 0"
+            (click)="markAllRead()"
+          >
+            @if (markingAllRead()) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            }
+            {{ 'notifications.markAllRead' | translate }}
+          </button>
+          <button
+            type="button"
+            class="pv-notif-icon-btn"
+            [disabled]="clearingAll() || items().length === 0"
+            [attr.aria-label]="'notifications.clearAll' | translate"
+            [title]="'notifications.clearAll' | translate"
+            (click)="clearAll()"
+          >
+            @if (clearingAll()) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+              </svg>
+            }
+          </button>
+          <button type="button" class="pv-notif-icon-btn" [attr.aria-label]="'grid.close' | translate" (click)="close()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="pv-notif-tabs" role="tablist">
+        <button type="button" class="pv-notif-tab" [class.pv-notif-tab-active]="!unreadOnly()" role="tab" [attr.aria-selected]="!unreadOnly()" (click)="setUnreadOnly(false)">
+          {{ 'notifications.allTab' | translate }}
+        </button>
+        <button type="button" class="pv-notif-tab" [class.pv-notif-tab-active]="unreadOnly()" role="tab" [attr.aria-selected]="unreadOnly()" (click)="setUnreadOnly(true)">
+          {{ 'notifications.unreadTab' | translate }}
+        </button>
+      </div>
+
+      <div class="pv-notif-list" role="list" (scroll)="onListScroll($event)" (keydown)="onListKeydown($event)">
+        @if (loading()) {
+          <div class="pv-notif-loading">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            {{ 'grid.loading' | translate }}
+          </div>
+        } @else if (items().length === 0) {
+          <div class="pv-notif-empty">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+            </svg>
+            <span>{{ (unreadOnly() ? 'notifications.emptyUnread' : 'notifications.empty') | translate }}</span>
+          </div>
+        } @else {
+          @for (item of items(); track item.id) {
+            <button
+              type="button"
+              class="pv-notif-item"
+              [class.pv-notif-item-unread]="!item.read"
+              (click)="onItemClick(item)"
+            >
+              @if (!item.read) {
+                <span class="pv-notif-item-dot" aria-hidden="true"></span>
+              }
+              <span class="pv-notif-item-body">
+                <span class="pv-notif-item-title">{{ item.title }}</span>
+                <span class="pv-notif-item-message" [class.pv-notif-item-message-expanded]="isExpanded(item.id)">
+                  {{ item.message }}
+                </span>
+                @if (item.message.length > 90) {
+                  <span class="pv-notif-item-expand" (click)="toggleExpand(item.id, $event)">
+                    {{ (isExpanded(item.id) ? 'notifications.showLess' : 'notifications.showMore') | translate }}
+                  </span>
+                }
+                <span class="pv-notif-item-time">{{ relativeTime(item.createdAt) }}</span>
+              </span>
+            </button>
+          }
+          @if (loadingMore()) {
+            <div class="pv-notif-loading pv-notif-loading-more">
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

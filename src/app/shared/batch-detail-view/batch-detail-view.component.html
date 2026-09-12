@@ -1,0 +1,110 @@
+<div class="card border-0 shadow-sm overflow-hidden">
+
+  <!-- ── Batch meta strip ──────────────────────────────────────────────── -->
+  <div class="pv-report-meta-bar">
+    <div class="pv-report-meta-item">
+      <span class="badge" [ngClass]="statusChipClass(batch.status)">{{ statusLabelKey(batch.status) | translate }}</span>
+    </div>
+    <div class="pv-report-meta-sep">·</div>
+    <div class="pv-report-meta-item">{{ batch.productName }}</div>
+    <div class="pv-report-meta-sep">·</div>
+    <div class="pv-report-meta-item pv-report-meta-muted">
+      <span>{{ 'batches.daysSinceFirstLog' | translate:{ count: '' + batch.daysSinceFirstLog } }}</span>
+      @if (batch.generalHoldingExceeded) {
+        <span class="badge pv-chip pv-chip--danger">{{ 'batches.holdingExceeded' | translate }}</span>
+      } @else if (batch.generalHoldingAlerted) {
+        <span class="badge pv-chip pv-chip--warning">{{ 'batches.holdingAlerted' | translate }}</span>
+      }
+    </div>
+  </div>
+
+  <!-- ── Department holding-time rule ─────────────────────────────────── -->
+  <div class="pv-holding-department-row">
+    <span class="pv-holding-department-label">{{ 'batches.departmentHolding' | translate }}</span>
+    <span class="pv-holding-department-progress">{{ 'batches.holdingProgress' | translate:{ days: '' + batch.daysInCurrentDepartment, threshold: '' + batch.effectiveDepartmentHoldingTimeDays } }}</span>
+    @if (batch.departmentHoldingExceeded) {
+      <span class="badge pv-chip pv-chip--danger">{{ 'batches.holdingExceeded' | translate }}</span>
+    } @else if (batch.departmentHoldingAlerted) {
+      <span class="badge pv-chip pv-chip--warning">{{ 'batches.holdingAlerted' | translate }}</span>
+    }
+    @if (batch.usingExceptionalHoldingTime) {
+      <span class="pv-holding-exceptional-tag" [title]="'batches.exceptionalThresholdTooltip' | translate">
+        {{ 'batches.exceptionalThresholdTooltip' | translate }}
+      </span>
+    }
+  </div>
+
+  <!-- ── Audit footer ──────────────────────────────────────────────────── -->
+  <app-batch-audit-footer [batch]="batch" />
+
+  <!-- ── Entries timeline ──────────────────────────────────────────────── -->
+  <div class="p-3 p-md-4">
+    <div class="pv-timeline">
+      @for (group of groupedEntries(); track group.dateKey) {
+        <div class="pv-timeline-date-heading">{{ group.entries[0].lineClearanceAt | date:'EEEE, d MMM y' }}</div>
+
+        @for (entry of group.entries; track entry.id) {
+          <div class="pv-timeline-row">
+            <div class="pv-timeline-rail">
+              <div class="pv-timeline-badge" [ngClass]="'pv-timeline-badge--' + entryKind(entry)">
+                @switch (entryKind(entry)) {
+                  @case ('checkin') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z"/>
+                      <path fill-rule="evenodd" d="M11.354 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L9.793 7.5H1.5a.5.5 0 0 0 0 1h8.293l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+                    </svg>
+                  }
+                  @case ('completed') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                    </svg>
+                  }
+                  @case ('rejected') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                  }
+                }
+              </div>
+            </div>
+
+            <div class="pv-timeline-card">
+              <div class="pv-timeline-card-top">
+                @switch (entryKind(entry)) {
+                  @case ('completed') {
+                    <span class="pv-timeline-label">{{ 'batches.completedEntryLabel' | translate }}</span>
+                  }
+                  @default {
+                    <span class="pv-timeline-label">{{ entry.departmentName }} · {{ entry.machineName }}</span>
+                  }
+                }
+                @if (isCurrentEntry(entry)) {
+                  <span class="pv-timeline-current-tag">{{ 'batches.currentTag' | translate }}</span>
+                }
+                @if (allowDelete && isDeletable(entry)) {
+                  <button type="button" class="pv-timeline-delete-btn" [title]="'batches.deleteEntry' | translate" (click)="deleteEntry.emit(entry)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+                    </svg>
+                    {{ 'common.delete' | translate }}
+                  </button>
+                }
+              </div>
+
+              <div class="pv-timeline-card-meta">
+                <span class="pv-timeline-time">{{ entry.lineClearanceAt | date:'h:mm a' }}</span>
+                <span class="pv-timeline-sep" aria-hidden="true">·</span>
+                <span>{{ 'batches.loggedBy' | translate:{ name: entry.createdBy, fullName: entry.createdByFullName } }}</span>
+              </div>
+
+              @if (entry.isRejected && entry.rejectedReason) {
+                <div class="pv-timeline-reason">{{ entry.rejectedReason }}</div>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+</div>

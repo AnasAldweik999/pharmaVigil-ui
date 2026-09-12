@@ -1,0 +1,12 @@
+<app-grid
+  [columns]="gridColumns()"
+  [defaultSort]="{ field: 'createdAt', direction: 'desc' }"
+  [filterFields]="gridFilters()"
+  [clickableRows]="true"
+  [rows]="rows"
+  [totalElements]="totalElements"
+  [totalPages]="totalPages"
+  [loading]="loading()"
+  (stateChange)="onGridStateChange($event)"
+  (rowClick)="onRowClick($event)"
+/>

@@ -1,0 +1,31 @@
+<div #confirmModalRef class="modal fade" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+
+      <div class="pv-modal-header">
+        <div class="d-flex align-items-center gap-2">
+          <div class="pv-modal-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+            </svg>
+          </div>
+          <h5 class="pv-modal-title" id="confirmModalLabel">{{ resolvedTitle }}</h5>
+        </div>
+        <button type="button" class="btn-close btn-close-white opacity-75" data-bs-dismiss="modal" [attr.aria-label]="'grid.close' | translate"></button>
+      </div>
+
+      <div class="pv-modal-body">
+        <p [class.mb-0]="!warning()">{{ message() }}</p>
+        @if (warning()) {
+          <p class="pv-modal-hint pv-modal-hint-danger mb-0">{{ warning() }}</p>
+        }
+      </div>
+
+      <div class="pv-modal-footer">
+        <button type="button" class="btn w-100" [ngClass]="confirmBtnClass" (click)="onConfirm()">{{ resolvedConfirmLabel }}</button>
+        <button type="button" class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">{{ 'common.cancel' | translate }}</button>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="pv-tag-input" [class.pv-tag-input--disabled]="disabled()" (click)="focusInput()">
+  @for (tag of tags(); let i = $index; track tag) {
+    <span class="pv-tag-chip">
+      <span class="pv-tag-chip-text" [title]="tag">{{ tag }}</span>
+      @if (!disabled()) {
+        <button
+          type="button"
+          class="pv-tag-chip-remove"
+          (click)="removeAt(i); $event.stopPropagation()"
+          [attr.aria-label]="'common.remove' | translate"
+        >×</button>
+      }
+    </span>
+  }
+  <input
+    #input
+    type="text"
+    class="pv-tag-input-field"
+    [placeholder]="tags().length === 0 ? placeholder : ''"
+    [value]="inputValue()"
+    [attr.maxlength]="maxLength"
+    [disabled]="disabled()"
+    (input)="onInputChange($any($event.target).value)"
+    (keydown)="onKeydown($event)"
+    (blur)="onBlur()"
+    (click)="$event.stopPropagation()"
+  />
+</div>

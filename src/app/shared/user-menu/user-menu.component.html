@@ -1,0 +1,52 @@
+<div class="pv-user-menu">
+  <button
+    type="button"
+    class="pv-user-menu-trigger"
+    (click)="toggle()"
+    [attr.aria-expanded]="open()"
+    [attr.aria-label]="'nav.account' | translate"
+  >
+    <span class="pv-user-menu-avatar">{{ initials() }}</span>
+    <span class="pv-user-menu-name d-none d-sm-inline">{{ name() }}</span>
+    <svg
+      class="pv-user-menu-chevron"
+      [class.pv-user-menu-chevron-open]="open()"
+      xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16"
+    >
+      <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+    </svg>
+  </button>
+
+  @if (open()) {
+    <div class="pv-user-menu-panel">
+      <div class="pv-user-menu-header">
+        <span class="pv-user-menu-avatar pv-user-menu-avatar-lg">{{ initials() }}</span>
+        <div class="min-w-0 flex-grow-1 overflow-hidden">
+          <div class="pv-user-menu-fullname">{{ name() }}</div>
+          <div class="pv-user-menu-role">{{ roleLabelKey | translate }}</div>
+        </div>
+      </div>
+
+      <div class="pv-user-menu-divider"></div>
+
+      <div class="pv-user-menu-field">
+        <span class="pv-user-menu-field-label">{{ 'nav.username' | translate }}</span>
+        <span class="pv-user-menu-field-value">{{ username() }}</span>
+      </div>
+      <div class="pv-user-menu-field">
+        <span class="pv-user-menu-field-label">{{ 'nav.email' | translate }}</span>
+        <span class="pv-user-menu-field-value">{{ email() }}</span>
+      </div>
+
+      <div class="pv-user-menu-divider"></div>
+
+      <button type="button" class="pv-user-menu-signout" (click)="logout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+          <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+        </svg>
+        {{ 'nav.signOut' | translate }}
+      </button>
+    </div>
+  }
+</div>

@@ -1,0 +1,313 @@
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a routerLink="/staff/batches" class="pv-back-link" [title]="'batches.backToBatches' | translate">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+    </svg>
+  </a>
+  <h1 class="pv-page-header-title mb-0">{{ 'batches.logBatchMovement' | translate }}</h1>
+</div>
+
+<!-- ── Batch number lookup ─────────────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm mb-4 overflow-hidden">
+  <div class="pv-form-section-header">{{ 'batches.lookupBatchNo' | translate }}</div>
+  <div class="card-body p-3 p-md-4">
+    <label for="batchNoInput" class="form-label fw-medium">{{ 'batches.batchNo' | translate }}<span class="pv-required" aria-hidden="true">*</span></label>
+    <input
+      id="batchNoInput"
+      type="text"
+      class="form-control"
+      maxlength="50"
+      [formControl]="batchNoControl"
+      [placeholder]="'batches.lookupPlaceholder' | translate"
+      [class.is-invalid]="batchNoControl.touched && (batchNoControl.hasError('maxlength') || batchNoControl.hasError('pattern'))"
+    />
+    @if (batchNoControl.touched && batchNoControl.hasError('maxlength')) {
+      <div class="invalid-feedback d-block">{{ 'batch.no.max.length' | translate:{ max: '50' } }}</div>
+    } @else if (batchNoControl.touched && batchNoControl.hasError('pattern')) {
+      <div class="invalid-feedback d-block">{{ 'batch.no.invalid.format' | translate }}</div>
+    }
+
+    @if (lookupState() === 'loading') {
+      <div class="pv-field-status pv-field-status--checking mt-2">
+        <span class="spinner-border" role="status" aria-hidden="true"></span>
+        {{ 'batches.checkingBatchNo' | translate }}
+      </div>
+    } @else if (lookupState() === 'new') {
+      <div class="mt-2">
+        <span class="badge pv-chip pv-chip--info">
+          <span class="pv-chip-dot"></span>
+          {{ 'batches.newBatchHint' | translate }}
+        </span>
+      </div>
+    } @else if (lookupState() === 'locked') {
+      <div class="alert alert-warning py-2 mt-2 mb-0">
+        {{ 'batches.lockedBatchHint' | translate:{ status: lockedStatusLabel() } }}
+      </div>
+    }
+  </div>
+
+  @if (lookupState() === 'existing') {
+    <div class="pv-batch-summary">
+      <div class="pv-batch-summary-top">
+        <span class="badge" [ngClass]="statusChipClass(existingBatch()!.status)">{{ statusLabelKey(existingBatch()!.status) | translate }}</span>
+        <span class="pv-batch-summary-location">
+          @if (isCheckedIn()) {
+            {{ 'batches.existingBatchHint' | translate:{ department: existingBatch()!.currentDepartmentName || '-', machine: existingBatch()!.currentMachineName || '-' } }}
+          } @else {
+            {{ 'batches.existingBatchHoldingHint' | translate:{ department: existingBatch()!.currentDepartmentName || '-' } }}
+          }
+        </span>
+      </div>
+
+      <div class="pv-holding-rules">
+        <div
+          class="pv-holding-rule"
+          [class.pv-holding-rule--alerted]="existingBatch()!.generalHoldingAlerted && !existingBatch()!.generalHoldingExceeded"
+          [class.pv-holding-rule--exceeded]="existingBatch()!.generalHoldingExceeded"
+        >
+          <div class="pv-holding-rule-head">
+            <span class="pv-holding-rule-eyebrow">{{ 'batches.overallHolding' | translate }}</span>
+            @if (existingBatch()!.generalHoldingExceeded) {
+              <span class="pv-holding-rule-state pv-holding-rule-state--exceeded">{{ 'batches.holdingExceeded' | translate }}</span>
+            } @else if (existingBatch()!.generalHoldingAlerted) {
+              <span class="pv-holding-rule-state pv-holding-rule-state--alerted">{{ 'batches.holdingAlerted' | translate }}</span>
+            }
+          </div>
+          <div class="pv-holding-rule-value">{{ 'batches.daysSinceFirstLog' | translate:{ count: '' + existingBatch()!.daysSinceFirstLog } }}</div>
+        </div>
+
+        <div
+          class="pv-holding-rule"
+          [class.pv-holding-rule--alerted]="existingBatch()!.departmentHoldingAlerted && !existingBatch()!.departmentHoldingExceeded"
+          [class.pv-holding-rule--exceeded]="existingBatch()!.departmentHoldingExceeded"
+        >
+          <div class="pv-holding-rule-head">
+            <span class="pv-holding-rule-eyebrow">{{ 'batches.departmentHolding' | translate }}</span>
+            @if (existingBatch()!.departmentHoldingExceeded) {
+              <span class="pv-holding-rule-state pv-holding-rule-state--exceeded">{{ 'batches.holdingExceeded' | translate }}</span>
+            } @else if (existingBatch()!.departmentHoldingAlerted) {
+              <span class="pv-holding-rule-state pv-holding-rule-state--alerted">{{ 'batches.holdingAlerted' | translate }}</span>
+            }
+          </div>
+          <div class="pv-holding-rule-value">{{ 'batches.holdingProgress' | translate:{ days: '' + existingBatch()!.daysInCurrentDepartment, threshold: '' + existingBatch()!.effectiveDepartmentHoldingTimeDays } }}</div>
+          <div class="pv-holding-bar">
+            <div class="pv-holding-bar-fill" [style.width.%]="holdingBarPercent(existingBatch()!.daysInCurrentDepartment, existingBatch()!.effectiveDepartmentHoldingTimeDays)"></div>
+          </div>
+          @if (existingBatch()!.usingExceptionalHoldingTime) {
+            <div class="pv-holding-rule-note">{{ 'batches.exceptionalThresholdTooltip' | translate }}</div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+  @if (lookupState() === 'existing' || lookupState() === 'locked') {
+    <app-batch-audit-footer [batch]="existingBatch()!" />
+  }
+</div>
+
+<!-- ── Entry form ───────────────────────────────────────────────────────────── -->
+@if (lookupState() === 'new' || lookupState() === 'existing') {
+  <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+    <div class="pv-form-section-header">{{ 'batches.logMovementSection' | translate }}</div>
+    <div class="card-body p-3 p-md-4">
+      <form [formGroup]="form">
+
+        <div class="mb-4">
+          <label class="form-label fw-medium">{{ 'batches.product' | translate }}<span class="pv-required" aria-hidden="true">*</span></label>
+          <app-searchable-dropdown
+            formControlName="productId"
+            [options]="productOptions()"
+            [searchUrl]="productSearchUrl"
+            searchParam="name"
+            [small]="false"
+            [invalid]="form.get('productId')!.invalid && form.get('productId')!.touched"
+          />
+          @if (form.get('productId')!.invalid && form.get('productId')!.touched) {
+            <div class="invalid-feedback d-block">{{ 'batch.product.id.required' | translate }}</div>
+          }
+        </div>
+
+        @if (canComplete()) {
+          <div class="form-check form-switch mb-4">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="completedToggle"
+              [checked]="form.get('mode')!.value === 'complete'"
+              (change)="onCompletedToggle($event)"
+            />
+            <label class="form-check-label fw-medium small" for="completedToggle">{{ 'batches.markCompletedToggle' | translate }}</label>
+          </div>
+        }
+
+        @if (form.get('mode')!.value === 'checkin') {
+          <div class="mb-4">
+            <label class="form-label fw-medium">{{ 'batches.machine' | translate }}<span class="pv-required" aria-hidden="true">*</span></label>
+            <app-searchable-dropdown
+              formControlName="machineId"
+              [searchUrl]="machineSearchUrl"
+              searchParam="name"
+              [small]="false"
+              [invalid]="(form.hasError('machineRequired') || form.hasError('machineAlreadyLogged') || form.hasError('machineNoDepartment')) && form.get('machineId')!.touched"
+              (labelChange)="selectedMachineLabel.set($event)"
+            />
+            @if (form.get('machineId')!.touched && form.hasError('machineRequired')) {
+              <div class="invalid-feedback d-block">{{ 'batch.machine.id.required' | translate }}</div>
+            }
+            @if (form.get('machineId')!.touched && form.hasError('machineAlreadyLogged')) {
+              <div class="pv-field-status pv-field-status--taken">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                  <path d="M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4M8.002 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                </svg>
+                {{ 'batch.machine.already.logged' | translate }}
+              </div>
+            }
+
+            @if (derivedDepartmentState() === 'loading') {
+              <div class="pv-field-status pv-field-status--checking">
+                <span class="spinner-border" role="status" aria-hidden="true"></span>
+                {{ 'batches.resolvingDepartment' | translate }}
+              </div>
+            } @else if (derivedDepartmentState() === 'found' && form.hasError('departmentAlreadyVisited')) {
+              <div class="pv-field-status pv-field-status--taken">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                  <path d="M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4M8.002 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                </svg>
+                {{ 'batches.derivedDepartment' | translate:{ name: derivedDepartment()!.name } }} — {{ 'batch.department.already.visited' | translate }}
+              </div>
+            } @else if (derivedDepartmentState() === 'found') {
+              <div class="pv-field-status pv-field-status--available">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                </svg>
+                {{ 'batches.derivedDepartment' | translate:{ name: derivedDepartment()!.name } }}
+              </div>
+            } @else if (derivedDepartmentState() === 'not-found') {
+              <div class="pv-field-status pv-field-status--taken">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                  <path d="M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4M8.002 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                </svg>
+                {{ 'batches.machineNotInDepartment' | translate }}
+              </div>
+            } @else if (derivedDepartmentState() === 'error') {
+              <div class="pv-field-status pv-field-status--taken">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                  <path d="M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4M8.002 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                </svg>
+                {{ 'batches.departmentLookupFailed' | translate }}
+              </div>
+            }
+          </div>
+        } @else if (form.get('mode')!.value === 'complete') {
+          <div class="pv-field-caption mb-4">
+            {{ 'batches.completingAt' | translate:{ department: existingBatch()!.currentDepartmentName || '-' } }}
+          </div>
+        }
+
+        <div class="mb-2">
+          <label for="lineClearanceAt" class="form-label fw-medium">{{ 'batches.lineClearance' | translate }}<span class="pv-required" aria-hidden="true">*</span></label>
+          <input
+            id="lineClearanceAt"
+            type="datetime-local"
+            class="form-control"
+            formControlName="lineClearanceAt"
+            [max]="maxDateTimeLocal()"
+            [class.is-invalid]="(form.get('lineClearanceAt')!.invalid || form.hasError('notAfterLastLog') || form.hasError('lineClearanceInFuture')) && form.get('lineClearanceAt')!.touched"
+          />
+        </div>
+
+        @if (form.hasError('lineClearanceInFuture') && form.get('lineClearanceAt')!.touched) {
+          <div class="text-danger small mb-3">{{ 'batch.line.clearance.in.future' | translate }}</div>
+        } @else if (form.hasError('notAfterLastLog') && form.get('lineClearanceAt')!.touched) {
+          <div class="text-danger small mb-3">{{ 'batch.line.clearance.not.after.last.log' | translate }}</div>
+        }
+
+        <div class="d-grid d-md-flex gap-2">
+          <button type="button" class="pv-submit-btn justify-content-center" [disabled]="submitting()" (click)="requestSubmit()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              {{ 'users.saving' | translate }}
+            } @else {
+              {{ modeLabelKey(form.get('mode')!.value) | translate }}
+            }
+          </button>
+
+          @if (lookupState() === 'existing') {
+            <button type="button" class="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2" (click)="openRejectModal()">
+              {{ 'batches.rejectBtn' | translate }}
+            </button>
+          }
+        </div>
+
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ── Reject modal (only reachable for an existing, in-progress batch) ───── -->
+<div #rejectModalRef class="modal fade" tabindex="-1" aria-labelledby="rejectBatchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+
+      <div class="pv-modal-header">
+        <div class="d-flex align-items-center gap-2">
+          <div class="pv-modal-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+            </svg>
+          </div>
+          <h5 class="pv-modal-title" id="rejectBatchModalLabel">{{ 'batches.rejectBatch' | translate }}</h5>
+        </div>
+        <button type="button" class="btn-close btn-close-white opacity-75" data-bs-dismiss="modal" [attr.aria-label]="'grid.close' | translate"></button>
+      </div>
+
+      <div class="pv-modal-body">
+        <form [formGroup]="rejectForm">
+          <label for="rejectReason" class="form-label fw-medium">{{ 'batches.rejectReason' | translate }}<span class="pv-required" aria-hidden="true">*</span></label>
+          <textarea
+            id="rejectReason"
+            class="form-control"
+            rows="3"
+            maxlength="255"
+            formControlName="reason"
+            [placeholder]="'batches.rejectReasonPlaceholder' | translate"
+            [class.is-invalid]="rejectForm.get('reason')!.invalid && rejectForm.get('reason')!.touched"
+          ></textarea>
+          @if (rejectForm.get('reason')!.touched && rejectForm.get('reason')!.hasError('required')) {
+            <div class="invalid-feedback">{{ 'batch.reject.reason.required' | translate }}</div>
+          } @else if (rejectForm.get('reason')!.touched && rejectForm.get('reason')!.hasError('maxlength')) {
+            <div class="invalid-feedback">{{ 'batch.reject.reason.max.length' | translate:{ max: '255' } }}</div>
+          }
+
+          <div class="pv-field-caption mt-2">{{ 'batches.rejectUsesLineClearance' | translate }}</div>
+          @if (rejectLineClearanceError()) {
+            <div class="text-danger small mt-1">{{ rejectLineClearanceError() }}</div>
+          }
+        </form>
+      </div>
+
+      <div class="pv-modal-footer">
+        <button type="button" class="btn btn-danger w-100" [disabled]="rejecting()" (click)="confirmReject()">
+          @if (rejecting()) {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          }
+          {{ 'batches.rejectBtn' | translate }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">{{ 'common.cancel' | translate }}</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<app-confirm-modal
+  #confirmSubmitModal
+  [confirmLabel]="modeLabelKey(form.get('mode')!.value) | translate"
+  confirmBtnClass="btn-primary"
+  (confirmed)="onSubmitConfirmed()"
+/>

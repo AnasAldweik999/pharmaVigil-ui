@@ -1,0 +1,390 @@
+<!-- Toolbar: active chips + icon buttons -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <!-- Active filter chips -->
+  <div class="d-flex flex-wrap gap-1 align-items-center flex-grow-1">
+    @for (entry of appliedFilterEntries(); track entry.keys[0]) {
+      <span class="pv-filter-chip">
+        <span class="small">{{ entry.label }}: <strong>{{ entry.displayValue }}</strong></span>
+        <button class="pv-filter-chip-remove" (click)="removeFilterKeys(entry.keys)" [attr.aria-label]="'grid.removeFilter' | translate">✕</button>
+      </span>
+    }
+  </div>
+  <!-- Action buttons (icons only) -->
+  <div class="d-flex gap-1 flex-shrink-0">
+    <!-- Refresh -->
+    <button class="btn btn-sm btn-outline-secondary pv-grid-toolbar-btn" (click)="refresh()" [disabled]="loading" [title]="'grid.refresh' | translate">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+      </svg>
+    </button>
+    <!-- Filters (only if filterFields provided) -->
+    @if (filterFields.length > 0) {
+      <button class="btn btn-sm btn-outline-secondary pv-grid-toolbar-btn position-relative" (click)="openFilterPanel()" [title]="'grid.filters' | translate">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5z"/>
+        </svg>
+        @if (appliedFilterEntries().length > 0) {
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.6rem;">
+            {{ appliedFilterEntries().length }}
+          </span>
+        }
+      </button>
+    }
+    <!-- Columns visibility -->
+    <button class="btn btn-sm btn-outline-secondary pv-grid-toolbar-btn" (click)="openColPanel()" [title]="'grid.showHideColumns' | translate">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm6 0v5h4V2zm4 6H6v6h4zm1 6h4V8h-4zm0-7h4V2h-4zM5 2H1v5h4zm0 6H1v6h4z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="pv-grid-table-outer">
+<div
+  class="table-responsive pv-grid-scroll"
+  #scrollWrap
+  [style.--pv-actions-w.px]="actionsColWidth()"
+  (scroll)="onGridScroll()"
+>
+  @if (rows.length === 0 && !loading) {
+    <div class="pv-grid-empty">
+      <div class="pv-grid-empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm15 2h-4v3h4zm0 4h-4v3h4zm0 4h-4v3h3a1 1 0 0 0 1-1zm-5 3v-3H6v3zm-5 0v-3H1v2a1 1 0 0 0 1 1zm-4-4h4V8H1zm0-4h4V4H1zm5-3v3h4V4zm4 4H6v3h4z"/>
+        </svg>
+      </div>
+      <p class="pv-grid-empty-title">{{ 'grid.noRecordsFound' | translate }}</p>
+      <p class="pv-grid-empty-hint">{{ 'grid.noRecordsHint' | translate }}</p>
+    </div>
+  } @else {
+    <div class="pv-grid-shadow pv-grid-shadow-left"  [class.pv-grid-shadow--visible]="showLeftShadow()"></div>
+    <div class="pv-grid-shadow pv-grid-shadow-right" [class.pv-grid-shadow--visible]="showRightShadow()"></div>
+    <table class="table table-hover align-middle mb-0 pv-grid-table" [class.pv-grid-table--resized]="hasResizedColumns()">
+      <thead>
+        <tr>
+          @for (col of displayColumns(); track col.key) {
+            <th
+              [class.pv-sortable]="col.sortable"
+              [class.pv-sort-active]="sortField() === sortKeyOf(col)"
+              [style.minWidth]="getColWidth(col.key)"
+              (click)="col.sortable && onSort(col)"
+            >
+              <span class="pv-grid-cell-text" [style.maxWidth]="getColWidth(col.key)">{{ col.label }}</span>
+              @if (col.sortable) {
+                <span class="pv-sort-icon">
+                  @if (sortField() === sortKeyOf(col) && sortDirection() === 'asc') {
+                    ▲
+                  } @else if (sortField() === sortKeyOf(col) && sortDirection() === 'desc') {
+                    ▼
+                  } @else {
+                    <span class="opacity-25">⇅</span>
+                  }
+                </span>
+              }
+              <div class="pv-col-resize-handle"
+                   (mousedown)="onResizeStart($event, col.key)"
+                   (touchstart)="onResizeStart($event, col.key)"
+                   (click)="$event.stopPropagation()">
+              </div>
+            </th>
+          }
+          @if (actions.length > 0) {
+            <th class="pv-grid-actions-th"></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows; track $index) {
+          <tr [class.pv-grid-row-clickable]="clickableRows" (click)="onRowClick(row)">
+            @for (col of displayColumns(); track col.key) {
+              <td class="small">
+                <span class="pv-grid-cell-text" [style.maxWidth]="getColWidth(col.key)">
+                  @if (isCellEmpty(row, col.key)) {
+                    <span class="text-muted">-</span>
+                  } @else if (col.type === 'badge') {
+                    <span class="badge" [ngClass]="col.badgeClass ? col.badgeClass('' + getCell(row, col.key)) : ''">
+                      {{ col.badgeLabel ? col.badgeLabel('' + getCell(row, col.key)) : getCell(row, col.key) }}
+                    </span>
+                  } @else if (col.type === 'date') {
+                    {{ ('' + getCell(row, col.key)) | date: 'dd MMM yyyy, h:mm a' }}
+                  } @else if (col.type === 'date-only') {
+                    {{ ('' + getCell(row, col.key)) | date: 'dd MMM yyyy' }}
+                  } @else {
+                    {{ col.formatValue ? col.formatValue('' + getCell(row, col.key)) : getCell(row, col.key) }}
+                  }
+                </span>
+              </td>
+            }
+            @if (actions.length > 0) {
+              <td class="pv-grid-actions-td text-end" style="white-space: nowrap;" (click)="$event.stopPropagation()">
+                <div class="d-flex gap-1 justify-content-end">
+                  @for (action of actions; track action.key) {
+                    @if (!action.condition || action.condition(row)) {
+                      <button
+                        class="pv-grid-action-btn btn"
+                        [ngClass]="action.btnClass || 'btn-outline-secondary'"
+                        [disabled]="actionsDisabled"
+                        (click)="onActionButtonClick(action, row)"
+                        [title]="action.label"
+                      >
+                        @switch (action.icon) {
+                          @case ('edit') {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                              <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                            </svg>
+                          }
+                          @case ('view') {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                              <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                            </svg>
+                          }
+                          @case ('delete') {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+                            </svg>
+                          }
+                          @case ('deactivate') {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                            </svg>
+                          }
+                          @case ('activate') {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                            </svg>
+                          }
+                          @case ('products') {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M4.5 5A3.5 3.5 0 0 0 1 8.5a3.5 3.5 0 0 0 3.5 3.5h3.5V5H4.5zm7 0H8v7h3.5A3.5 3.5 0 0 0 15 8.5 3.5 3.5 0 0 0 11.5 5z"/>
+                            </svg>
+                          }
+                          @case ('stops') {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                              <path d="M5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5z"/>
+                            </svg>
+                          }
+                          @case ('machines') {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.892 3.433-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.892-1.64-.901-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.47l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                            </svg>
+                          }
+                          @default {
+                            {{ action.label }}
+                          }
+                        }
+                      </button>
+                    }
+                  }
+                </div>
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+@if (loading) {
+  <div class="pv-grid-loading-overlay">
+    <div class="pv-grid-loading">
+      <div class="pv-grid-loading-spinner">
+        <div class="spinner-border spinner-border-sm" style="color:#1a2942;width:1.5rem;height:1.5rem;" role="status">
+          <span class="visually-hidden">{{ 'grid.loading' | translate }}</span>
+        </div>
+      </div>
+      <span class="pv-grid-loading-text">{{ 'grid.loadingData' | translate }}</span>
+    </div>
+  </div>
+}
+</div>
+
+<!-- Footer: count + pagination -->
+@if (!loading && totalElements > 0) {
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3 pv-grid-footer">
+    <span class="small text-muted">
+      {{ 'grid.showingRange' | translate:{ from: '' + showingFrom(), to: '' + showingTo(), total: '' + totalElements } }}
+    </span>
+
+    <div class="d-flex align-items-center gap-2 pv-grid-footer-controls">
+      <select
+        class="form-select form-select-sm pv-grid-page-size"
+        style="width: auto;"
+        (change)="onSizeChange(+$any($event.target).value)"
+      >
+        @for (s of pageSizes; track s) {
+          <option [value]="s" [selected]="s === currentSize()">{{ 'grid.perPage' | translate:{ size: '' + s } }}</option>
+        }
+      </select>
+
+      @if (totalPages > 1) {
+        <nav [attr.aria-label]="'grid.pageNavigation' | translate" class="pv-grid-pagination">
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="currentPage() === 0">
+              <button class="page-link" (click)="onPageChange(0)" [disabled]="currentPage() === 0 || loading" [title]="'grid.firstPage' | translate">«</button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage() === 0">
+              <button class="page-link" (click)="onPageChange(currentPage() - 1)" [disabled]="currentPage() === 0 || loading" [title]="'grid.previousPage' | translate">‹</button>
+            </li>
+            @for (p of pageNumbers(); track p) {
+              <li class="page-item" [class.active]="p === currentPage()">
+                <button class="page-link" (click)="onPageChange(p)" [disabled]="loading">{{ p + 1 }}</button>
+              </li>
+            }
+            <li class="page-item" [class.disabled]="currentPage() >= totalPages - 1">
+              <button class="page-link" (click)="onPageChange(currentPage() + 1)" [disabled]="currentPage() >= totalPages - 1 || loading" [title]="'grid.nextPage' | translate">›</button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage() >= totalPages - 1">
+              <button class="page-link" (click)="onPageChange(totalPages - 1)" [disabled]="currentPage() >= totalPages - 1 || loading" [title]="'grid.lastPage' | translate">»</button>
+            </li>
+          </ul>
+        </nav>
+      }
+    </div>
+  </div>
+}
+
+<app-confirm-modal
+  [title]="confirmTitle"
+  [confirmLabel]="confirmLabel"
+  [confirmBtnClass]="confirmBtnClass"
+  (confirmed)="onConfirmAction()"
+/>
+
+<!-- Column visibility offcanvas panel -->
+<div #colPanel class="offcanvas offcanvas-end pv-filter-panel" tabindex="-1" style="width:300px">
+
+  <div class="pv-filter-panel-header">
+    <div class="d-flex align-items-center gap-2">
+      <div class="pv-filter-panel-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm6 0v5h4V2zm4 6H6v6h4zm1 6h4V8h-4zm0-7h4V2h-4zM5 2H1v5h4zm0 6H1v6h4z"/>
+        </svg>
+      </div>
+      <span class="pv-filter-panel-title">{{ 'grid.columns' | translate }}</span>
+    </div>
+    <button type="button" class="btn-close btn-close-white opacity-75" (click)="closeColPanel()" [attr.aria-label]="'grid.close' | translate"></button>
+  </div>
+
+  <div class="pv-filter-panel-body">
+    @for (col of allColumns(); track col.key) {
+      <div class="pv-filter-field-card">
+        <label class="d-flex align-items-center gap-2 mb-0 py-1" style="cursor:pointer">
+          <input
+            type="checkbox"
+            class="form-check-input flex-shrink-0 mt-0"
+            [checked]="isDraftColChecked(col.key)"
+            (change)="toggleDraftCol(col.key)"
+          />
+          <span style="font-size:0.85rem; color:#374151">{{ col.label }}</span>
+        </label>
+      </div>
+    }
+  </div>
+
+  <div class="pv-filter-panel-footer">
+    <button class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2 btn-sm" (click)="applyColPanel()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+      </svg>
+      {{ 'grid.apply' | translate }}
+    </button>
+    <button type="button" class="pv-filter-clear-link" (click)="resetDraftCols()">{{ 'grid.showAllColumns' | translate }}</button>
+  </div>
+
+</div>
+
+<!-- Filter offcanvas panel -->
+@if (filterFields.length > 0) {
+  <div #filterPanel class="offcanvas offcanvas-end pv-filter-panel" tabindex="-1" aria-labelledby="gridFilterLabel" style="width: 340px;">
+
+    <!-- Header -->
+    <div class="pv-filter-panel-header">
+      <div class="d-flex align-items-center gap-2">
+        <div class="pv-filter-panel-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5z"/>
+          </svg>
+        </div>
+        <span class="pv-filter-panel-title" id="gridFilterLabel">{{ 'grid.filters' | translate }}</span>
+        @if (draftFilterCount() > 0) {
+          <span class="badge rounded-pill bg-white text-primary" style="font-size: 0.65rem; font-weight: 700;">
+            {{ draftFilterCount() }}
+          </span>
+        }
+      </div>
+      <button type="button" class="btn-close btn-close-white opacity-75" (click)="closeFilterPanel()" [attr.aria-label]="'grid.close' | translate"></button>
+    </div>
+
+    <!-- Fields -->
+    <div class="pv-filter-panel-body" (keydown.enter)="onFilterPanelKeydown($event)">
+      @for (field of filterFields; track field.key) {
+        <div class="pv-filter-field-card">
+          <span class="pv-filter-label">{{ field.label }}</span>
+          @if (field.type === 'text') {
+            <input
+              type="text"
+              class="form-control form-control-sm"
+              [placeholder]="field.placeholder || searchPlaceholder(field.label)"
+              [value]="draftFilters()[field.key] || ''"
+              (input)="onDraftInput(field.key, $any($event.target).value)"
+            />
+          } @else if (field.type === 'date') {
+            <input
+              type="date"
+              class="form-control form-control-sm"
+              [value]="draftFilters()[field.key] || ''"
+              (input)="onDraftInput(field.key, $any($event.target).value)"
+            />
+          } @else if (field.type === 'daterange') {
+            <app-date-range-picker
+              [fromDate]="draftFilters()[field.fromKey!] || ''"
+              [toDate]="draftFilters()[field.toKey!] || ''"
+              (rangeChange)="onDraftDateRange(field.fromKey!, field.toKey!, $event.from, $event.to)"
+            />
+          } @else if (field.type === 'searchable-select') {
+            <app-searchable-dropdown
+              [options]="field.options ?? []"
+              [searchUrl]="field.searchUrl ?? null"
+              [searchParam]="field.searchParam ?? 'name'"
+              [labelFn]="field.labelFn ?? defaultLabelFn"
+              [valueFn]="field.valueFn ?? defaultValueFn"
+              [secondaryLabelFn]="field.secondaryLabelFn"
+              [placeholder]="field.placeholder ?? ('grid.searchEllipsis' | translate)"
+              [value]="draftFilters()[field.key] || ''"
+              (valueChange)="onDraftInput(field.key, $event)"
+              (labelChange)="onDraftLabel(field.key, $event)"
+            />
+          } @else {
+            <select
+              class="form-select form-select-sm"
+              [value]="draftFilters()[field.key] || ''"
+              (change)="onDraftInput(field.key, $any($event.target).value)"
+            >
+              @for (opt of field.options; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="pv-filter-panel-footer">
+      <button class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" (click)="applyFilters()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+        </svg>
+        {{ 'grid.applyFilters' | translate }}
+      </button>
+      <button type="button" class="pv-filter-clear-link" (click)="clearAllDraft()">{{ 'grid.clearAllFilters' | translate }}</button>
+    </div>
+
+  </div>
+}

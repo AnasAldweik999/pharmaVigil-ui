@@ -1,0 +1,39 @@
+<!-- ── Page header ────────────────────────────────────────────────────────── -->
+<div class="pv-page-header mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <div class="pv-page-header-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5 8 5.961 14.154 3.5zM15 4.239l-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464Z"/>
+      </svg>
+    </div>
+    <h1 class="pv-page-header-title">{{ 'nav.products' | translate }}</h1>
+  </div>
+  <a routerLink="/supervisor/products/new" class="pv-cta-btn">
+    <span class="pv-cta-btn-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+      </svg>
+    </span>
+    <span class="pv-cta-btn-label">{{ 'products.addProduct' | translate }}</span>
+  </a>
+</div>
+
+<!-- ── Products Table ──────────────────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-4">
+
+    <app-grid
+      [columns]="gridColumns()"
+      [defaultSort]="{ field: 'createdAt', direction: 'desc' }"
+      [filterFields]="gridFilters()"
+      [clickableRows]="true"
+      [rows]="items()"
+      [totalElements]="totalElements()"
+      [totalPages]="totalPages()"
+      [loading]="loading()"
+      (stateChange)="onGridStateChange($event)"
+      (rowClick)="onRowClick($event)"
+    />
+
+  </div>
+</div>

@@ -1,0 +1,363 @@
+<!-- ── GroupBy selector ──────────────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm mb-4 overflow-hidden">
+  <div class="card-body p-3">
+
+    <!-- Section label -->
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1a2942" viewBox="0 0 16 16">
+        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm8 0A1.5 1.5 0 0 1 10.5 9h3A1.5 1.5 0 0 1 15 10.5v3A1.5 1.5 0 0 1 13.5 15h-3A1.5 1.5 0 0 1 9 13.5z"/>
+      </svg>
+      <div>
+        <div class="fw-semibold" style="font-size:0.9rem;color:#1a2942">{{ 'dashboard.viewResultsBy' | translate }}</div>
+        <div class="text-muted" style="font-size:0.78rem">{{ 'dashboard.viewResultsByHint' | translate }}</div>
+      </div>
+    </div>
+
+    <div class="pv-groupby-row">
+  @for (opt of groupByOptions(); track opt.value) {
+    <button
+      type="button"
+      class="pv-groupby-card"
+      [class.active]="groupBy() === opt.value"
+      (click)="onGroupByChange(opt.value)"
+    >
+      @switch (opt.value) {
+        @case ('MACHINE') {
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.892 3.433-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.892-1.64-.901-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.47l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+          </svg>
+        }
+        @case ('STAFF') {
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+          </svg>
+        }
+        @case ('SHIFT') {
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+          </svg>
+        }
+        @case ('DATE') {
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+          </svg>
+        }
+        @case ('STOP') {
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 1 0-.708-.708L8 7.293z"/>
+          </svg>
+        }
+      }
+      {{ opt.label }}
+    </button>
+  }
+    </div><!-- /pv-groupby-row -->
+  </div><!-- /card-body -->
+</div><!-- /groupby card -->
+
+<!-- ── Filters card ──────────────────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body px-3 py-3">
+
+    <!-- Date range -->
+    <div class="row g-2 mb-2">
+      <div class="col-12 col-md-auto">
+        <div class="pv-filter-field">
+          <span class="pv-filter-label">{{ 'dashboard.dateRange' | translate }}</span>
+          <app-date-range-picker
+            [fromDate]="dateRange().from"
+            [toDate]="dateRange().to"
+            (rangeChange)="onDateRangeChange({ from: $event.from, to: $event.to })"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Three multi-selects -->
+    <div class="row g-2 mb-0">
+
+      <div class="col-12 col-md-4">
+        <div class="pv-filter-field">
+          <span class="pv-filter-label">{{ 'dashboard.shifts' | translate }}</span>
+          <app-multi-select
+            [placeholder]="'dashboard.allShifts' | translate"
+            [searchUrl]="base + '/api/supervisor/shifts'"
+            searchParam="name"
+            [labelFn]="shiftLabelFn"
+            [valueFn]="shiftValueFn"
+            (selectionChange)="onShiftsChange($event)"
+          />
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="pv-filter-field">
+          <span class="pv-filter-label">{{ 'dashboard.staff' | translate }}</span>
+          <app-multi-select
+            [placeholder]="'dashboard.allStaff' | translate"
+            [searchUrl]="base + '/api/supervisor/staff-users'"
+            searchParam="search"
+            [labelFn]="staffLabelFn"
+            [valueFn]="staffValueFn"
+            [secondaryLabelFn]="staffSecondaryLabelFn"
+            (selectionChange)="onStaffChange($event)"
+          />
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="pv-filter-field">
+          <span class="pv-filter-label">{{ 'dashboard.machines' | translate }}</span>
+          <app-multi-select
+            [placeholder]="'dashboard.allMachines' | translate"
+            [searchUrl]="base + '/api/supervisor/machines'"
+            searchParam="name"
+            [labelFn]="machLabelFn"
+            [valueFn]="machValueFn"
+            (selectionChange)="onMachinesChange($event)"
+          />
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Action footer — below all inputs, separated by divider -->
+  <div class="pv-filter-footer">
+    <!-- DOM: Clear first → right on desktop, bottom on mobile (column-reverse) -->
+    @if (hasLoaded()) {
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary pv-filter-footer-btn d-flex align-items-center justify-content-center gap-2"
+        (click)="clearResults()"
+        [disabled]="loadingSummary() || loadingGrouped()"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+        </svg>
+        {{ 'dashboard.clearResults' | translate }}
+      </button>
+    }
+    <button
+      type="button"
+      class="btn btn-sm btn-primary pv-filter-footer-btn d-flex align-items-center justify-content-center gap-2"
+      (click)="applyFilters()"
+      [disabled]="loadingSummary() || loadingGrouped() || dateRangeIncomplete()"
+      [title]="dateRangeIncomplete() ? ('dashboard.dateRangeRequired' | translate) : null"
+    >
+      @if (loadingSummary()) {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+          <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+        </svg>
+      }
+      {{ 'grid.apply' | translate }}
+    </button>
+  </div>
+</div>
+
+<!-- ── Stale banner ───────────────────────────────────────────────────────── -->
+@if (isStale() && hasLoaded()) {
+  <div class="pv-stale-banner mb-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" style="flex-shrink:0">
+      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+      <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+    </svg>
+    <span [innerHTML]="'dashboard.staleBanner' | translate"></span>
+  </div>
+}
+
+<!-- ── Results wrapper (dims when stale) ─────────────────────────────────── -->
+<div [class.pv-results-stale]="isStale()">
+
+<!-- ── KPI cards ─────────────────────────────────────────────────────────── -->
+@if (summaryCards(); as cards) {
+  <div class="row g-3 mb-4">
+
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 pv-kpi-col">
+      <div class="card border-0 shadow-sm h-100 border-start border-4 border-primary">
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-bold text-primary lh-1 mb-1" [style.fontSize]="kpiFontSize(cards.totalProducts)">{{ cards.totalProducts | number }}</div>
+              <div class="small text-muted">{{ 'dashboard.totalProducts' | translate }}</div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="text-primary flex-shrink-0" style="opacity:0.15" viewBox="0 0 16 16">
+              <path d="M0 8a4 4 0 0 1 4-4h8a4 4 0 0 1 0 8H4a4 4 0 0 1-4-4m4-3a3 3 0 0 0 0 6h2.5V5zm3.5 0v6H12a3 3 0 0 0 0-6z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (appliedGroupBy() === 'STOP') {
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 pv-kpi-col">
+      <div class="card border-0 shadow-sm h-100 border-start border-4 border-success">
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-bold text-success lh-1 mb-1" [style.fontSize]="kpiFontSize(cards.totalMachines)">{{ cards.totalMachines | number }}</div>
+              <div class="small text-muted">{{ 'dashboard.totalMachines' | translate }}</div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="text-success flex-shrink-0" style="opacity:0.15" viewBox="0 0 16 16">
+              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.892 3.433-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.892-1.64-.901-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.47l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 pv-kpi-col">
+      <div class="card border-0 shadow-sm h-100 border-start border-4 border-warning">
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-bold text-warning lh-1 mb-1" [style.fontSize]="kpiFontSize(cards.totalStops)">{{ cards.totalStops | number }}</div>
+              <div class="small text-muted">{{ 'dashboard.totalStops' | translate }}</div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="text-warning flex-shrink-0" style="opacity:0.15" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+              <path d="M5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 pv-kpi-col">
+      <div class="card border-0 shadow-sm h-100 border-start border-4 border-danger">
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-bold text-danger lh-1 mb-1" [style.fontSize]="kpiFontSize(cards.totalDowntimeMinutes)">{{ cards.totalDowntimeMinutes }}</div>
+              <div class="small text-muted">{{ 'dashboard.totalDowntimeMin' | translate }}</div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="text-danger flex-shrink-0" style="opacity:0.15" viewBox="0 0 16 16">
+              <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (appliedGroupBy() !== 'STOP') {
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 pv-kpi-col">
+      <div class="card border-0 shadow-sm h-100 border-start border-4 border-secondary">
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-bold text-secondary lh-1 mb-1" [style.fontSize]="kpiFontSize(cards.totalHolds)">{{ cards.totalHolds | number }}</div>
+              <div class="small text-muted">{{ 'dashboard.totalHolds' | translate }}</div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="text-secondary flex-shrink-0" style="opacity:0.15" viewBox="0 0 16 16">
+              <path d="M5.5 3.5A1.5 1.5 0 0 1 7 2h2a1.5 1.5 0 0 1 1.5 1.5v1A1.5 1.5 0 0 1 9 6H7a1.5 1.5 0 0 1-1.5-1.5zm2 0v1A.5.5 0 0 0 8 5h.5a.5.5 0 0 0 .5-.5V3.5a.5.5 0 0 0-.5-.5H8a.5.5 0 0 0-.5.5"/>
+              <path d="M3 2.5a.5.5 0 0 1 .5-.5H6a.5.5 0 0 1 0 1v.5h4.5V3a.5.5 0 0 1 1 0v.5h.5a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5.5a2 2 0 0 1 2-2h.5V3a.5.5 0 0 1-.5-.5m10 4H3a1 1 0 0 0-1 1V14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7.5a1 1 0 0 0-1-1"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 pv-kpi-col">
+      <div class="card border-0 shadow-sm h-100 border-start border-4 border-dark">
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-bold lh-1 mb-1" style="color:#1a2942" [style.fontSize]="kpiFontSize(cards.totalDeviations)">{{ cards.totalDeviations | number }}</div>
+              <div class="small text-muted">{{ 'dashboard.totalDeviations' | translate }}</div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="flex-shrink-0" style="opacity:0.12;color:#1a2942" viewBox="0 0 16 16">
+              <path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+  </div>
+}
+
+<!-- ── Main grid ──────────────────────────────────────────────────────────── -->
+@if (hasLoaded()) {
+  <div class="card border-0 shadow-sm mb-3 pv-results-section">
+    <div class="card-header bg-white border-bottom py-2 px-3 d-flex align-items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#8c96a2" viewBox="0 0 16 16">
+        <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm15 2h-4v3h4zm0 4h-4v3h4zm0 4h-4v3h3a1 1 0 0 0 1-1zm-5 3v-3H6v3zm-5 0v-3H1v2a1 1 0 0 0 1 1zm-4-4h4V8H1zm0-4h4V4H1zm5-3v3h4V4zm4 4H6v3h4z"/>
+      </svg>
+      <span class="fw-semibold text-dark" style="font-size:0.875rem">
+        {{ 'dashboard.groupedBy' | translate:{ groupBy: groupByLabel(appliedGroupBy()) } }}
+      </span>
+      @if (loadingGrouped()) {
+        <span class="spinner-border spinner-border-sm text-secondary ms-1" role="status" aria-hidden="true"></span>
+      }
+    </div>
+    <div class="card-body p-3">
+      <app-grid
+        [columns]="gridColumns()"
+        [rows]="groupedRows()"
+        [totalElements]="groupedTotal()"
+        [totalPages]="groupedPages()"
+        [loading]="loadingGrouped()"
+        [actions]="gridActions()"
+        (stateChange)="onPageChange($event)"
+        (actionClick)="onActionClick($event)"
+      />
+    </div>
+  </div>
+}
+
+<!-- ── Products inner grid ────────────────────────────────────────────────── -->
+@if (activeProductsId() && productsBaseUrl()) {
+  <div #productsRef class="mb-3">
+    <app-products-inner-grid
+      [baseUrl]="productsBaseUrl()!"
+      [title]="productsTitle()"
+      [groupBy]="appliedGroupBy()"
+      (closed)="activeProductsId.set(null); productsBaseUrl.set(null)"
+    />
+  </div>
+}
+
+<!-- ── Stop machines inner grid ───────────────────────────────────────────── -->
+@if (activeStopId() && stopMachinesBaseUrl()) {
+  <div #stopMachinesRef class="mb-3">
+    <app-stop-machines-inner-grid
+      [baseUrl]="stopMachinesBaseUrl()!"
+      [title]="stopMachinesTitle()"
+      (closed)="activeStopId.set(null); stopMachinesBaseUrl.set(null)"
+    />
+  </div>
+}
+
+<!-- ── Empty state (data loaded, but no rows) ─────────────────────────────── -->
+@if (hasLoaded() && !loadingGrouped() && groupedRows().length === 0) {
+  <div class="text-center py-5 text-muted">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" style="opacity:0.2" viewBox="0 0 16 16">
+      <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm15 2h-4v3h4zm0 4h-4v3h4zm0 4h-4v3h3a1 1 0 0 0 1-1zm-5 3v-3H6v3zm-5 0v-3H1v2a1 1 0 0 0 1 1zm-4-4h4V8H1zm0-4h4V4H1zm5-3v3h4V4zm4 4H6v3h4z"/>
+    </svg>
+    <div class="fw-semibold mt-3" style="font-size:0.95rem">{{ 'dashboard.noDataFound' | translate }}</div>
+    <div class="small mt-1">{{ 'dashboard.noDataHint' | translate }}</div>
+  </div>
+}
+
+</div><!-- /pv-results-stale wrapper -->
+
+<!-- ── Initial state (cleared / never loaded) ────────────────────────────── -->
+@if (!hasLoaded() && !loadingSummary()) {
+  <div class="text-center py-5 text-muted">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" style="opacity:0.15" viewBox="0 0 16 16">
+      <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+      <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+    </svg>
+    <div class="fw-semibold mt-3" style="font-size:0.95rem">{{ 'dashboard.noResultsToShow' | translate }}</div>
+    <div class="small mt-1">{{ 'dashboard.noResultsHint' | translate }}</div>
+  </div>
+}

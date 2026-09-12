@@ -1,0 +1,69 @@
+<!-- ── Page header ────────────────────────────────────────────────────────── -->
+<div class="pv-page-header mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <div class="pv-page-header-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5zm-2 8A1.5 1.5 0 0 1 5.5 10h1A1.5 1.5 0 0 1 8 11.5v1A1.5 1.5 0 0 1 6.5 14h-1A1.5 1.5 0 0 1 4 12.5zm6 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 10 12.5z"/>
+      </svg>
+    </div>
+    <h1 class="pv-page-header-title">{{ 'nav.holdingTime' | translate }}</h1>
+  </div>
+</div>
+
+<!-- ── Tab switcher ───────────────────────────────────────────────────────── -->
+<div class="pv-holding-tabs" role="tablist">
+  <button type="button" class="pv-holding-tab" [class.pv-holding-tab--active]="tab() === 'all'" role="tab" [attr.aria-selected]="tab() === 'all'" (click)="setTab('all')">
+    {{ 'batches.holdingAll' | translate }}
+  </button>
+  <button type="button" class="pv-holding-tab" [class.pv-holding-tab--active]="tab() === 'alerted'" role="tab" [attr.aria-selected]="tab() === 'alerted'" (click)="setTab('alerted')">
+    {{ 'batches.holdingAlerted' | translate }}
+  </button>
+  <button type="button" class="pv-holding-tab" [class.pv-holding-tab--active]="tab() === 'exceeded'" role="tab" [attr.aria-selected]="tab() === 'exceeded'" (click)="setTab('exceeded')">
+    {{ 'batches.holdingExceeded' | translate }}
+  </button>
+</div>
+
+<!-- ── Departments grid ───────────────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-4">
+    @for (activeTab of [tab()]; track activeTab) {
+      <app-grid
+        [columns]="deptGridColumns()"
+        [defaultSort]="{ field: 'name', direction: 'asc' }"
+        [filterFields]="deptGridFilters()"
+        [clickableRows]="true"
+        [rows]="departments()"
+        [totalElements]="deptTotalElements()"
+        [totalPages]="deptTotalPages()"
+        [loading]="deptLoading()"
+        (stateChange)="onDeptGridStateChange($event)"
+        (rowClick)="onDeptRowClick($event)"
+      />
+    }
+  </div>
+</div>
+
+<!-- ── Batches-in-department grid (drill-down) ───────────────────────────── -->
+@if (selectedDepartment(); as sel) {
+  <div class="pv-holding-subgrid">
+    <h2 class="pv-holding-subgrid-title">{{ 'batches.batchesInDepartment' | translate:{ department: sel.name } }}</h2>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        @for (d of [sel]; track d.id) {
+          <app-grid
+            [columns]="batchGridColumns()"
+            [defaultSort]="{ field: 'createdAt', direction: 'desc' }"
+            [filterFields]="batchGridFilters()"
+            [clickableRows]="true"
+            [rows]="batches()"
+            [totalElements]="batchTotalElements()"
+            [totalPages]="batchTotalPages()"
+            [loading]="batchLoading()"
+            (stateChange)="onBatchGridStateChange($event)"
+            (rowClick)="onBatchRowClick($event)"
+          />
+        }
+      </div>
+    </div>
+  </div>
+}

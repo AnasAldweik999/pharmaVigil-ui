@@ -1,0 +1,330 @@
+@if (loading()) {
+  <div class="d-flex justify-content-center py-5">
+    <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+  </div>
+} @else if (notFound()) {
+  <div class="alert alert-danger py-3" role="alert">
+    {{ 'departments.notFound' | translate }} <a routerLink="/supervisor/departments">{{ 'departments.backToDepartments' | translate }}</a>
+  </div>
+} @else if (department(); as dept) {
+
+  <!-- ── Page header ────────────────────────────────────────────────────────── -->
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a routerLink="/supervisor/departments" class="pv-back-link" [title]="'departments.backToDepartments' | translate">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+      </svg>
+    </a>
+    <h1 class="pv-page-header-title mb-0">{{ dept.name }}</h1>
+    <span class="badge pv-chip" [ngClass]="dept.active ? 'pv-chip--success' : 'pv-chip--danger'">
+      <span class="pv-chip-dot" aria-hidden="true"></span>
+      {{ (dept.active ? 'users.active' : 'users.inactive') | translate }}
+    </span>
+  </div>
+
+  <form [formGroup]="form">
+
+    <!-- ── General Info ─────────────────────────────────────────────────────── -->
+    <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+      <div class="pv-form-section-header">{{ 'departments.generalInfo' | translate }}</div>
+      <div class="card-body p-3 p-md-4">
+
+        <div class="mb-4">
+          <label for="detailDepartmentName" class="form-label fw-medium">{{ 'departments.nameLabel' | translate }}<span class="pv-required" aria-hidden="true">*</span></label>
+          <input
+            id="detailDepartmentName"
+            type="text"
+            class="form-control"
+            [class.is-invalid]="nameControl.invalid && nameControl.touched"
+            [class.is-valid]="nameControl.valid && nameControl.dirty"
+            formControlName="name"
+          />
+          @if (nameControl.touched && nameControl.hasError('required')) {
+            <div class="invalid-feedback">{{ 'users.nameRequired' | translate }}</div>
+          } @else if (nameControl.touched && nameControl.hasError('maxlength')) {
+            <div class="invalid-feedback">{{ 'department.name.length.invalid' | translate }}</div>
+          }
+        </div>
+
+        <div>
+          <label class="form-label fw-medium mb-2">{{ 'departments.stages' | translate }}</label>
+          <app-tag-input formControlName="stages" [placeholder]="'departments.stagesPlaceholder' | translate" />
+          <div class="pv-field-caption">{{ 'departments.tagInputHint' | translate }}</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Configuration ────────────────────────────────────────────────────── -->
+    <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+      <div class="pv-form-section-header">{{ 'departments.configuration' | translate }}</div>
+      <div class="card-body p-3 p-md-4">
+
+        <div formGroupName="outputs">
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="detailHasOutputs" formControlName="hasOutputs" />
+            <label class="form-check-label fw-medium small" for="detailHasOutputs">{{ 'departments.hasOutputs' | translate }}</label>
+          </div>
+
+          @if (hasOutputsControl.value) {
+            <div class="mt-3">
+              <label class="form-label fw-medium">{{ 'departments.units' | translate }}<span class="pv-required" aria-hidden="true">*</span></label>
+              @if (unitsLoading()) {
+                <div class="text-muted small"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>{{ 'grid.loading' | translate }}</div>
+              } @else if (unitsError()) {
+                <div class="text-danger small">
+                  {{ 'departments.lookupLoadFailed' | translate }}
+                  <button type="button" class="btn btn-link btn-sm p-0 ms-1" (click)="loadUnits()">{{ 'departments.retry' | translate }}</button>
+                </div>
+              } @else {
+                <app-multi-select
+                  [options]="unitOptions()"
+                  [labelFn]="unitLabelFn"
+                  [valueFn]="unitValueFn"
+                  [initialValues]="unitsControl.value"
+                  [placeholder]="'departments.unitsPlaceholder' | translate"
+                  (selectionChange)="onUnitsChange($event)"
+                />
+              }
+              @if (outputsGroup.hasError('unitsRequired') && unitsControl.touched) {
+                <div class="text-danger small mt-1">{{ 'department.units.required' | translate }}</div>
+              }
+            </div>
+          }
+        </div>
+
+        <hr class="pv-section-divider" />
+
+        <div class="form-check form-switch mb-2">
+          <input class="form-check-input" type="checkbox" role="switch" id="detailShowConsignee" formControlName="showConsignee" />
+          <label class="form-check-label fw-medium small" for="detailShowConsignee">{{ 'departments.showConsignee' | translate }}</label>
+        </div>
+
+        <hr class="pv-section-divider" />
+
+        <div class="form-check form-switch mb-2">
+          <input class="form-check-input" type="checkbox" role="switch" id="detailTerminalDepartment" formControlName="terminalDepartment" />
+          <label class="form-check-label fw-medium small" for="detailTerminalDepartment">{{ 'departments.terminalDepartment' | translate }}</label>
+        </div>
+        <div class="pv-field-caption mb-2">{{ 'departments.terminalDepartmentHint' | translate }}</div>
+
+        <hr class="pv-section-divider" />
+
+        <label class="form-label fw-medium">{{ 'departments.supervisors' | translate }} <span class="pv-optional-tag">{{ 'departments.optionalTag' | translate }}</span></label>
+        @if (supervisorsLoading()) {
+          <div class="text-muted small"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>{{ 'grid.loading' | translate }}</div>
+        } @else if (supervisorsError()) {
+          <div class="text-danger small">
+            {{ 'departments.lookupLoadFailed' | translate }}
+            <button type="button" class="btn btn-link btn-sm p-0 ms-1" (click)="loadSupervisors()">{{ 'departments.retry' | translate }}</button>
+          </div>
+        } @else {
+          <app-multi-select
+            [options]="supervisorOptions()"
+            [searchUrl]="supervisorSearchUrl"
+            searchParam="search"
+            [labelFn]="supervisorLabelFn"
+            [valueFn]="supervisorValueFn"
+            [secondaryLabelFn]="supervisorSecondaryLabelFn"
+            [initialValues]="dept.supervisorIds"
+            [placeholder]="'departments.supervisorsPlaceholder' | translate"
+            (selectionChange)="onSupervisorsChange($event)"
+          />
+        }
+
+        <hr class="pv-section-divider" />
+
+        <label class="form-label fw-medium">{{ 'departments.machines' | translate }} <span class="pv-optional-tag">{{ 'departments.optionalTag' | translate }}</span></label>
+        @if (machinesLoading()) {
+          <div class="text-muted small"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>{{ 'grid.loading' | translate }}</div>
+        } @else if (machinesError()) {
+          <div class="text-danger small">
+            {{ 'departments.lookupLoadFailed' | translate }}
+            <button type="button" class="btn btn-link btn-sm p-0 ms-1" (click)="loadMachines()">{{ 'departments.retry' | translate }}</button>
+          </div>
+        } @else {
+          <app-multi-select
+            [options]="machines()"
+            [searchUrl]="machineSearchUrl"
+            searchParam="name"
+            [initialValues]="dept.machineIds"
+            [placeholder]="'departments.machinesPlaceholder' | translate"
+            (selectionChange)="onMachinesChange($event)"
+          />
+        }
+
+      </div>
+    </div>
+
+    <!-- ── Holding Times ────────────────────────────────────────────────────── -->
+    <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+      <div class="pv-form-section-header">{{ 'departments.holdingTimesSection' | translate }}</div>
+      <div class="card-body p-3 p-md-4">
+
+        <div class="pv-holding-standard">
+          <label for="detailStandardHoldingTime" class="pv-holding-standard-label">{{ 'departments.standardHoldingTime' | translate }}<span class="pv-required" aria-hidden="true">*</span></label>
+          <div class="pv-holding-standard-row">
+            <div class="pv-holding-standard-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path stroke-linecap="round" d="M12 7v5l3 3"/>
+              </svg>
+            </div>
+            <div class="pv-holding-standard-input-wrap">
+              <input
+                id="detailStandardHoldingTime"
+                type="number"
+                min="1"
+                max="1000"
+                step="1"
+                class="form-control"
+                [class.is-invalid]="standardHoldingTimeControl.invalid && standardHoldingTimeControl.touched"
+                formControlName="standardHoldingTime"
+                (input)="clampToMax($event, standardHoldingTimeControl, 1000)"
+              />
+              <span class="pv-holding-standard-suffix">{{ 'departments.standardHoldingTimeSuffix' | translate }}</span>
+            </div>
+          </div>
+          @if (standardHoldingTimeControl.touched && standardHoldingTimeControl.invalid) {
+            <div class="text-danger small mt-2">{{ 'department.standard.holding.time.invalid' | translate }}</div>
+          }
+        </div>
+
+        <div>
+          <div class="pv-holding-exceptions-head">
+            <span class="pv-holding-exceptions-title">{{ 'departments.exceptionalHoldings' | translate }}</span>
+            @if (holdingsArray.length > 0) {
+              <span class="pv-holding-exceptions-count">{{ holdingsArray.length }}</span>
+            }
+          </div>
+          <div class="pv-field-caption mb-2">{{ 'departments.exceptionalHoldingsHint' | translate }}</div>
+
+          @if (productsLoading()) {
+            <div class="text-muted small"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>{{ 'grid.loading' | translate }}</div>
+          } @else if (productsError()) {
+            <div class="text-danger small">
+              {{ 'departments.lookupLoadFailed' | translate }}
+              <button type="button" class="btn btn-link btn-sm p-0 ms-1" (click)="loadProducts()">{{ 'departments.retry' | translate }}</button>
+            </div>
+          }
+
+          <div formArrayName="exceptionalHoldings" class="pv-holding-rows">
+            @for (hg of holdingsArray.controls; let hi = $index; track hg) {
+              <div class="pv-holding-row" [formGroupName]="hi">
+                <div class="pv-holding-row-product">
+                  <app-searchable-dropdown
+                    formControlName="productId"
+                    [options]="products()"
+                    [searchUrl]="productSearchUrl"
+                    searchParam="name"
+                    [excludeValues]="selectedProductIdsExcept(hi)"
+                    [placeholder]="'departments.holdingProductPlaceholder' | translate"
+                    [invalid]="hg.get('productId')!.invalid && hg.get('productId')!.touched"
+                    [small]="false"
+                  />
+                  @if (hg.get('productId')!.touched && hg.get('productId')!.hasError('required')) {
+                    <div class="text-danger small mt-1">{{ 'department.holding.product.required' | translate }}</div>
+                  }
+                </div>
+                <div class="pv-holding-row-days">
+                  <input
+                    type="number"
+                    min="1"
+                    max="1000"
+                    step="1"
+                    class="form-control"
+                    formControlName="holdingTimeDays"
+                    (input)="clampToMax($event, hg.get('holdingTimeDays')!, 1000)"
+                    [class.is-invalid]="hg.get('holdingTimeDays')!.invalid && hg.get('holdingTimeDays')!.touched"
+                  />
+                  <span>{{ 'departments.days' | translate }}</span>
+                </div>
+                <button type="button" class="pv-holding-row-remove" (click)="removeHolding(hi)" [title]="'departments.removeHolding' | translate">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+                  </svg>
+                </button>
+                @if (hg.get('holdingTimeDays')!.touched && hg.get('holdingTimeDays')!.invalid) {
+                  <div class="text-danger small mt-1 pv-holding-row-error">{{ 'department.holding.time.invalid' | translate }}</div>
+                }
+              </div>
+            }
+          </div>
+
+          <button type="button" class="pv-holding-add-row" (click)="addHolding()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+            </svg>
+            {{ 'departments.addHolding' | translate }}
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  </form>
+
+  <!-- ── Danger zone ────────────────────────────────────────────────────────── -->
+  <div class="card pv-danger-zone mb-4 overflow-hidden">
+    <div class="pv-form-section-header pv-form-section-header--danger">{{ 'users.dangerZone' | translate }}</div>
+    <div class="card-body p-3 p-md-4">
+      <div class="pv-account-actions-row">
+        <div class="pv-account-action">
+          <div>
+            <div class="pv-account-action-title">{{ (dept.active ? 'departments.deactivateDepartment' : 'departments.activateDepartment') | translate }}</div>
+            <div class="pv-account-action-desc">
+              {{ (dept.active ? 'departments.deactivateDepartmentDesc' : 'departments.activateDepartmentDesc') | translate }}
+            </div>
+          </div>
+          <button
+            type="button"
+            class="pv-btn"
+            [ngClass]="dept.active ? 'pv-btn--outline-danger' : 'pv-btn--solid-success'"
+            [disabled]="togglingActive()"
+            (click)="requestToggleActive()"
+          >
+            @if (togglingActive()) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            } @else if (dept.active) {
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+              </svg>
+            }
+            {{ (dept.active ? 'users.deactivate' : 'users.activate') | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Sticky save bar (appears once the form is dirty) ──────────────────── -->
+  <div class="pv-save-bar" [class.pv-save-bar--visible]="form.dirty">
+    <span class="pv-save-bar-message">{{ 'users.unsavedChanges' | translate }}</span>
+    <div class="pv-save-bar-actions">
+      <button type="button" class="btn btn-outline-secondary" [disabled]="saving()" (click)="discardChanges()">{{ 'users.discardChanges' | translate }}</button>
+      <button type="button" class="pv-submit-btn" [disabled]="saving() || form.invalid" (click)="requestSave()">
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          {{ 'users.saving' | translate }}
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+          </svg>
+          {{ 'users.saveChangesLower' | translate }}
+        }
+      </button>
+    </div>
+  </div>
+
+  <app-confirm-modal
+    #confirmModal
+    [title]="confirmModalTitle"
+    [confirmLabel]="confirmModalLabel"
+    [confirmBtnClass]="confirmModalBtnClass"
+    (confirmed)="onConfirmModalConfirmed()"
+  />
+}

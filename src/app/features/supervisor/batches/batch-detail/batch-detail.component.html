@@ -1,0 +1,30 @@
+@if (loading()) {
+  <div class="d-flex justify-content-center py-5">
+    <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+  </div>
+} @else if (notFound()) {
+  <div class="alert alert-danger py-3" role="alert">
+    {{ 'batches.notFound' | translate }} <a routerLink="/supervisor/batches">{{ 'batches.backToBatches' | translate }}</a>
+  </div>
+} @else if (batch(); as b) {
+
+  <!-- ── Page header ────────────────────────────────────────────────────────── -->
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a routerLink="/supervisor/batches" class="pv-back-link" [title]="'batches.backToBatches' | translate">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+      </svg>
+    </a>
+    <h1 class="pv-page-header-title mb-0">{{ b.batchNo }}</h1>
+  </div>
+
+  <app-batch-detail-view [batch]="b" [allowDelete]="true" (deleteEntry)="onDeleteEntry($event)" />
+
+  <app-confirm-modal
+    #confirmModal
+    [title]="'batches.deleteEntry' | translate"
+    [confirmLabel]="'common.delete' | translate"
+    confirmBtnClass="btn-danger"
+    (confirmed)="onConfirmModalConfirmed()"
+  />
+}
